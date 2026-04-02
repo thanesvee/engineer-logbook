@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Log Book วิศวกร">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#185FA5">
+<title>Log Book ภาคีวิศวกร</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Log%20Book%20%E0%B8%A0%E0%B8%B2%E0%B8%84%E0%B8%B5%E0%B8%A7%E0%B8%B4%E0%B8%A8%E0%B8%A7%E0%B8%81%E0%B8%A3%22%2C%22short_name%22%3A%22Log%20Book%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f5f0%22%2C%22theme_color%22%3A%22%23185FA5%22%2C%22start_url%22%3A%22.%22%7D">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--blue:#185FA5;--blue-l:#E6F1FB;--blue-d:#0C447C;--green:#27500A;--green-l:#EAF3DE;--green-m:#3B6D11;--green-b:#C0DD97;--amber:#633806;--amber-l:#FAEEDA;--amber-b:#FAC775;--red:#A32D2D;--red-l:#FCEBEB;--border:#e0e0d8;--bg:#f5f5f0;--card:#fff;--text:#1a1a1a;--muted:#666;--faint:#999}
+body{font-family:'Sarabun','Segoe UI',sans-serif;font-size:15px;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;padding-bottom:80px}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:none;background:none;cursor:pointer;font-family:inherit;color:var(--muted);font-size:10px;gap:3px;min-height:52px}
+.bnav-item.active{color:var(--blue)}
+.bnav-icon{font-size:20px;line-height:1}
+.bnav-label{font-size:10px;font-weight:500;white-space:nowrap}
+
+/* HEADER */
+.header{background:var(--blue);color:#fff;padding:12px 16px 10px;padding-top:calc(12px + env(safe-area-inset-top))}
+.header h1{font-size:17px;font-weight:700}
+.header p{font-size:11px;opacity:.85;margin-top:2px}
+
+/* STATUS STRIP */
+.status-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--border)}
+.ss-item{text-align:center}
+.ss-label{font-size:10px;color:var(--muted)}
+.ss-val{font-size:13px;font-weight:700;color:var(--text)}
+.ss-item.ok .ss-val{color:var(--green)}
+.ss-item.ok .ss-label{color:var(--green-m)}
+
+/* PAGE */
+.page{display:none;padding:12px}
+.page.active{display:block}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+
+/* FIELDS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:5px}
+.field .hint{font-size:11px;color:var(--faint);margin-bottom:4px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:9px;font-size:15px;font-family:inherit;background:#fff;color:var(--text);outline:none;appearance:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+textarea{resize:vertical;min-height:90px}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid transparent;min-height:44px;transition:opacity .15s}
+.btn:active{opacity:.75}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-s{background:#fff;color:var(--text);border-color:var(--border)}
+.btn-d{background:#fff;color:var(--red);border-color:#F09595}
+.btn-g{background:var(--green-l);color:var(--green);border-color:var(--green-b)}
+.btn-sm{padding:7px 12px;font-size:13px;min-height:36px}
+.btn-full{width:100%;display:flex}
+
+/* PILLS */
+.pill-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pill{padding:7px 13px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-family:inherit;font-weight:500;min-height:36px;transition:all .15s}
+.pill.on{background:var(--blue-l);color:var(--blue);border-color:var(--blue)}
+
+/* RECORDS */
+.rec-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:12px;padding:13px;margin-bottom:10px}
+.rec-card.sel{border-left-color:var(--green-m)}
+.rnum{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.rblue{background:var(--blue-l);color:var(--blue)}
+.rgreen{background:var(--green-l);color:var(--green-m)}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.bblue{background:var(--blue-l);color:var(--blue)}
+.bgreen{background:var(--green-l);color:var(--green)}
+.bamber{background:var(--amber-l);color:var(--amber)}
+
+/* INFO */
+.info{padding:11px 14px;border-radius:9px;font-size:13px;margin-bottom:10px;line-height:1.5}
+.info-b{background:var(--blue-l);border:1px solid #B5D4F4;color:var(--blue)}
+.info-g{background:var(--green-l);border:1px solid var(--green-b);color:var(--green)}
+.info-a{background:var(--amber-l);border:1px solid var(--amber-b);color:var(--amber)}
+
+/* SECTION NAV (scrollable horizontal on mobile) */
+.sec-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.sec-scroll::-webkit-scrollbar{display:none}
+.sec-chip{padding:7px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);white-space:nowrap;font-family:inherit;font-weight:500;min-height:36px;flex-shrink:0}
+.sec-chip.active{background:var(--blue-l);border-color:var(--blue);color:var(--blue);font-weight:700}
+.sec-chip.done{background:var(--green-l);border-color:var(--green-b);color:var(--green-m)}
+
+/* COMP */
+.comp-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px}
+.comp-card.done{border-left-color:var(--green-m)}
+.comp-ghd{font-size:11px;font-weight:700;color:var(--muted);padding:10px 0 6px;border-top:1px solid var(--border);margin-top:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* PROG */
+.prog{height:8px;background:#e8e8e0;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal.open{display:block}
+.modal-inner{min-height:100%;display:flex;align-items:flex-end}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:#e0e0d8;border-radius:2px;margin:0 auto 16px}
+.modal-hd{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.modal-hd h2{flex:1;font-size:17px}
+
+/* OUTPUT */
+.output-box{width:100%;min-height:220px;font-family:monospace;font-size:12px;padding:12px;border:1px solid var(--border);border-radius:9px;background:#f9f9f5;resize:vertical;color:var(--text)}
+
+/* COUNTDOWN BIG */
+.cd-big{text-align:center;padding:24px 0 16px}
+.cd-num{font-size:64px;font-weight:800;color:var(--blue);line-height:1}
+.cd-unit{font-size:16px;color:var(--muted);margin-top:4px}
+.cd-sub{font-size:12px;color:var(--faint);margin-top:4px}
+
+/* FLOW */
+.flow-bar{display:flex;flex-direction:column;gap:0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.flow-step{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.flow-step:last-child{border-bottom:none}
+.flow-num{width:28px;height:28px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.flow-text{}
+.flow-title{font-size:13px;font-weight:700}
+.flow-sub{font-size:11px;color:var(--muted)}
+
+/* SUBNAV */
+.sub-nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+.sub-nav::-webkit-scrollbar{display:none}
+.snav-btn{padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);white-space:nowrap;font-family:inherit;font-weight:500;min-height:38px;flex-shrink:0}
+.snav-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* TOAST */
+#toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;display:none;white-space:nowrap}
+
+/* ADD TO HOME BANNER */
+#ath-banner{background:var(--blue);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;flex-shrink:0}
+#ath-banner button{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* GUIDE */
+.guide-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px}
+.plan-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px}
+
+/* RESPONSIVE GRID */
+@media(min-width:500px){
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+}
+@media(max-width:499px){
+  .grid2 .field,.grid3 .field{margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚙ Log Book ภาคีวิศวกร <span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:20px;font-size:11px">ฟรี 100%</span></h1>
+  <p>บันทึกผลงานสะสมเพื่อขอเลื่อนระดับสามัญวิศวกร — สภาวิศวกร</p>
+  <p style="font-size:11px;opacity:.55;margin-top:4px">ผู้พัฒนา ผศ.ดร.ธเนศ วีระศิริ</p>
+</div>
+
+<div id="ath-banner">
+  <span style="flex:1">📱 ติดตั้งเป็นแอปในมือถือ — กด "เพิ่มไปยังหน้าจอโฮม"</span>
+  <button onclick="showAthGuide()">วิธีติดตั้ง</button>
+  <button onclick="document.getElementById('ath-banner').style.display='none'" style="background:none;border:none;font-size:18px;padding:0 0 0 4px">×</button>
+</div>
+
+<div class="status-strip" id="status-bar"></div>
+
+<div id="page-newmode" class="page active"></div>
+<div id="page-profile" class="page"></div>
+<div id="page-work" class="page"></div>
+<div id="page-outstanding" class="page"></div>
+<div id="page-competency" class="page"></div>
+<div id="page-generate" class="page"></div>
+
+<nav id="bottom-nav">
+  <button class="bnav-item active" data-tab="newmode" onclick="switchTab('newmode')"><span class="bnav-icon">🌱</span><span class="bnav-label">จบใหม่</span></button>
+  <button class="bnav-item" data-tab="profile" onclick="switchTab('profile')"><span class="bnav-icon">👤</span><span class="bnav-label">ข้อมูล</span></button>
+  <button class="bnav-item" data-tab="work" onclick="switchTab('work')"><span class="bnav-icon">①</span><span class="bnav-label">บัญชีงาน</span></button>
+  <button class="bnav-item" data-tab="outstanding" onclick="switchTab('outstanding')"><span class="bnav-icon">②</span><span class="bnav-label">ดีเด่น</span></button>
+  <button class="bnav-item" data-tab="competency" onclick="switchTab('competency')"><span class="bnav-icon">③</span><span class="bnav-label">คำแถลง</span></button>
+  <button class="bnav-item" data-tab="generate" onclick="switchTab('generate')"><span class="bnav-icon">📄</span><span class="bnav-label">สร้างเอกสาร</span></button>
+</nav>
+
+<!-- Record Modal -->
+<div class="modal" id="rec-modal">
+<div class="modal-inner"><div class="modal-box">
+<div class="modal-handle"></div>
+<div class="modal-hd">
+  <h2 id="rec-modal-title">บันทึกผลงาน</h2>
+  <button class="btn btn-s btn-sm" onclick="closeModal('rec-modal')">✕ ปิด</button>
+</div>
+<div class="grid2">
+  <div class="field"><label>ชื่อโครงการ *</label><input id="r-project" placeholder="โครงการก่อสร้าง / ออกแบบ..."></div>
+  <div class="field"><label>บริษัท / หน่วยงาน *</label><input id="r-company"></div>
+  <div class="field"><label>ตำแหน่งหน้าที่ *</label><input id="r-position" placeholder="วิศวกรโครงการ"></div>
+  <div class="field"><label>จำนวนเดือน</label><input id="r-months" type="number" min="1" inputmode="numeric"></div>
+  <div class="field"><label>วันที่เริ่มต้น *</label><input id="r-start" type="date"></div>
+  <div class="field"><label>วันที่แล้วเสร็จ *</label><input id="r-end" type="date"></div>
+</div>
+<div class="field">
+  <label>ลักษณะงาน ตามกฎกระทรวง 2565 * (เลือกได้หลายข้อ)</label>
+  <div class="pill-group" id="r-types-ui"></div>
+</div>
+<div class="field"><label>ขนาดและรายละเอียดงาน *</label><div class="hint">เช่น อาคาร 20 ชั้น พื้นที่ 50,000 ตร.ม. / ระบบไฟฟ้า 1,500 kVA</div><input id="r-size"></div>
+<div class="field"><label>ลักษณะงาน / ความรับผิดชอบ *</label><textarea id="r-resp" placeholder="อธิบายหน้าที่และความรับผิดชอบ..."></textarea></div>
+<div class="field"><label>ผลงานที่เด่นชัด *</label><textarea id="r-achieve" placeholder="ผลสัมฤทธิ์ ปัญหาที่แก้ไขได้ ผลกระทบเชิงบวก..."></textarea></div>
+<div class="grid2">
+  <div class="field"><label>ชื่อผู้รับรอง</label><input id="r-cert-name"></div>
+  <div class="field"><label>ตำแหน่งผู้รับรอง</label><input id="r-cert-pos" placeholder="วุฒิวิศวกรโยธา"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:8px">
+  <button class="btn btn-s" style="flex:1" onclick="closeModal('rec-modal')">ยกเลิก</button>
+  <button class="btn btn-p" style="flex:2" onclick="saveRec()">✓ บันทึก</button>
+</div>
+</div></div>
+</div>
+
+<!-- Outstanding Work Modal -->
+<div class="modal" id="work-modal">
+<div class="modal-inner"><div class="modal-box">
+<div class="modal-handle"></div>
+<div class="modal-hd">
+  <h2>ผลงานวิศวกรรมดีเด่น</h2>
+  <span id="w-prog-label" style="font-size:12px;color:var(--muted)"></span>
+  <button class="btn btn-p btn-sm" onclick="saveWork()">บันทึก</button>
+  <button class="btn btn-s btn-sm" onclick="closeModal('work-modal')">✕</button>
+</div>
+<div class="field"><label>ชื่อเรื่อง *</label><input id="w-title" placeholder="ระบุชื่อเรื่องที่ชัดเจน..." style="font-weight:700"></div>
+<div class="field"><label>คัดเลือกจากโครงการ</label><select id="w-source" onchange="onSrcChange()"><option value="">— เลือกโครงการ —</option></select></div>
+<div id="w-source-info" style="display:none;margin-bottom:10px"></div>
+<div class="sec-scroll" id="w-sec-nav"></div>
+<div class="card" style="margin:0">
+  <h3 id="w-sec-title" style="margin-bottom:6px;font-size:14px"></h3>
+  <div id="w-sec-hint" class="info info-b" style="font-size:12px;margin-bottom:10px"></div>
+  <textarea id="w-sec-content" style="min-height:220px" placeholder="กรอกเนื้อหาในหัวข้อนี้..." oninput="onSecInput()"></textarea>
+  <div id="w-char-cnt" style="font-size:11px;color:var(--faint);margin-top:4px"></div>
+</div>
+</div></div>
+</div>
+
+<!-- ATH Guide Modal -->
+<div class="modal" id="ath-modal">
+<div class="modal-inner"><div class="modal-box">
+<div class="modal-handle"></div>
+<div class="modal-hd">
+  <h2>📱 วิธีติดตั้งเป็นแอปในมือถือ</h2>
+  <button class="btn btn-s btn-sm" onclick="closeModal('ath-modal')">✕</button>
+</div>
+<div class="card" style="border-left:3px solid #185FA5;margin-bottom:10px">
+  <div style="font-weight:700;margin-bottom:8px;color:#185FA5">🤖 Android (Chrome)</div>
+  <div style="font-size:13px;color:#444;line-height:1.7">
+    1. เปิดไฟล์ด้วย Chrome<br>
+    2. กดเมนู ⋮ (3 จุด) มุมขวาบน<br>
+    3. เลือก "เพิ่มไปยังหน้าจอโฮม"<br>
+    4. กด "เพิ่ม" → ไอคอนจะปรากฏในหน้าจอโฮม
+  </div>
+</div>
+<div class="card" style="border-left:3px solid #000;margin-bottom:10px">
+  <div style="font-weight:700;margin-bottom:8px">🍎 iPhone (Safari)</div>
+  <div style="font-size:13px;color:#444;line-height:1.7">
+    1. เปิดไฟล์ด้วย Safari เท่านั้น<br>
+    2. กดปุ่ม แชร์ (สี่เหลี่ยมมีลูกศรขึ้น) ด้านล่าง<br>
+    3. เลื่อนลงหา "เพิ่มไปที่หน้าจอโฮม"<br>
+    4. กด "เพิ่ม" → ไอคอนจะปรากฏในหน้าจอโฮม
+  </div>
+</div>
+<div class="info info-a">
+  <b>หมายเหตุ iPhone:</b> แนะนำ Export ข้อมูลสำรองไว้เป็นประจำ เพราะ Safari อาจล้างข้อมูลถ้าไม่ได้เปิดแอปนานกว่า 7 วัน
+</div>
+<button class="btn btn-p btn-full" onclick="closeModal('ath-modal')">เข้าใจแล้ว</button>
+</div></div>
+</div>
+
+<!-- Export/Import Modal -->
+<div class="modal" id="data-modal">
+<div class="modal-inner"><div class="modal-box">
+<div class="modal-handle"></div>
+<div class="modal-hd"><h2>จัดการข้อมูล</h2><button class="btn btn-s btn-sm" onclick="closeModal('data-modal')">✕</button></div>
+<div class="card" style="margin-bottom:10px">
+  <div style="font-weight:700;margin-bottom:6px">💾 Export ข้อมูล</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:10px">บันทึกข้อมูลทั้งหมดเป็นไฟล์ .json เพื่อสำรองข้อมูลหรือย้ายเครื่อง</div>
+  <button class="btn btn-p btn-full" onclick="exportData()">💾 Export ข้อมูล</button>
+</div>
+<div class="card">
+  <div style="font-weight:700;margin-bottom:6px">📂 Import ข้อมูล</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:10px">นำเข้าข้อมูลจากไฟล์ .json ที่ Export ไว้ก่อนหน้า</div>
+  <label class="btn btn-s btn-full" style="cursor:pointer">📂 เลือกไฟล์ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+</div>
+<div class="info info-a" style="margin-top:10px">แนะนำ Export สำรองข้อมูลทุกสัปดาห์ โดยเฉพาะผู้ใช้ iPhone</div>
+</div></div>
+</div>
+
+<div style="text-align:center;padding:16px 0 4px;font-size:12px;color:#aaa;letter-spacing:.3px">ผู้พัฒนา ผศ.ดร.ธเนศ วีระศิริ</div>
+<div id="toast"></div>
+
+<script>
+const WORK_TYPES=["งานให้คำปรึกษา","งานวางโครงการ","งานออกแบบและคำนวณ","งานควบคุมการสร้างหรือการผลิต","งานพิจารณาตรวจสอบ","งานอำนวยการใช้"];
+const WORK_GUIDE={
+"งานให้คำปรึกษา":{desc:"การให้ข้อแนะนำ ตรวจวินิจฉัย หรือตรวจรับรองงานวิศวกรรม",ex:"ให้คำปรึกษาด้านโครงสร้าง ตรวจสอบแบบ รับรองความปลอดภัย",tip:"บันทึก: ชนิดงาน ผลการวินิจฉัย มาตรฐานที่ใช้",c:"#E6F1FB",tc:"#185FA5"},
+"งานวางโครงการ":{desc:"การศึกษา วิเคราะห์หาทางเลือก หรือวางแผนโครงการ",ex:"Feasibility study, Master plan, การเลือกระบบ",tip:"บันทึก: ทางเลือกที่ศึกษา เหตุผลการเลือก ผลการวางแผน",c:"#EAF3DE",tc:"#3B6D11"},
+"งานออกแบบและคำนวณ":{desc:"การใช้หลักวิชาและความชำนาญเพื่อให้ได้รายละเอียดในการก่อสร้าง/ผลิต",ex:"ออกแบบโครงสร้าง วาดแบบ คำนวณ Load ออกแบบระบบ",tip:"บันทึก: มาตรฐานที่ใช้ ซอฟต์แวร์ ขนาดงาน รายการคำนวณ",c:"#FAEEDA",tc:"#633806"},
+"งานควบคุมการสร้างหรือการผลิต":{desc:"การอำนวยการควบคุมการก่อสร้าง ติดตั้ง ซ่อม หรือดัดแปลง",ex:"ควบคุมงานก่อสร้าง ตรวจงานหน้างาน ออก RFI/Shop drawing",tip:"บันทึก: จำนวนครั้งตรวจงาน ปัญหาที่พบ มูลค่าโครงการ",c:"#FAECE7",tc:"#993C1D"},
+"งานพิจารณาตรวจสอบ":{desc:"การค้นคว้า วิเคราะห์ ทดสอบ หรือตรวจประเมินงานวิศวกรรม",ex:"ทดสอบวัสดุ ตรวจประเมินความปลอดภัย วิเคราะห์ความเสียหาย",tip:"บันทึก: ขอบเขตการตรวจสอบ วิธีทดสอบ ผลลัพธ์",c:"#EEEDFE",tc:"#534AB7"},
+"งานอำนวยการใช้":{desc:"การอำนวยการดูแลการใช้และบำรุงรักษาชิ้นงานหรือระบบ",ex:"ดูแลระบบ BMS ควบคุมการใช้งานเครื่องจักร วางแผน Maintenance",tip:"บันทึก: ขนาดระบบที่ดูแล แผน PM จำนวนคนในทีม",c:"#E1F5EE",tc:"#0F6E56"},
+};
+const OW_SECTIONS=[
+{id:"intro",label:"1. คำนำ",hint:"คำแถลงภาพรวมของรายงานและการนำไปพิจารณาประเมินผลความสามารถในการประกอบวิชาชีพ"},
+{id:"ack",label:"2. กิตติกรรม",hint:"ขอบคุณผู้ให้ความอนุเคราะห์และผู้มีส่วนร่วมในการทำงาน (ถ้ามี)"},
+{id:"intro2",label:"4. บทนำ",hint:"ลักษณะงาน รายละเอียดโครงการ ตำแหน่ง อำนาจหน้าที่ การมีส่วนร่วมในการบริหารจัดการ"},
+{id:"scope",label:"5. ลักษณะและขอบเขต",hint:"กำหนดขอบเขตของปัญหาและงานทางวิศวกรรม กำหนดตัวแปรในระบบ"},
+{id:"obj",label:"6. วัตถุประสงค์",hint:"กำหนดเป้าหมายความสำเร็จของงานหรือการแก้ไขปัญหา"},
+{id:"research",label:"7. การสืบค้น",hint:"วิเคราะห์และยืนยันปัญหาทางวิศวกรรม วิธีและผลการสืบค้นข้อมูล"},
+{id:"method",label:"8. หลักการและวิธีแก้",hint:"การเลือกวิธีการแก้ไขปัญหาโดยใช้องค์ความรู้ทางวิศวกรรม การศึกษาเปรียบเทียบทางเลือก"},
+{id:"result",label:"9. ผลลัพธ์",hint:"การวิเคราะห์ความสัมพันธ์ตัวแปร การคำนวณผลลัพธ์โดยใช้โมเดลทางคณิตศาสตร์"},
+{id:"eval",label:"10. การประเมินผล",hint:"กระบวนการประเมินผลลัพธ์และผลกระทบ วิธีการตัดสินใจในงานวิศวกรรม"},
+{id:"conc",label:"11. บทสรุป",hint:"สรุปองค์ความรู้ความชำนาญ ผลสำเร็จและจุดเด่น ปัญหาอุปสรรคและการแก้ไข"},
+{id:"ref",label:"12. เอกสารอ้างอิง",hint:"รายการเอกสารและมาตรฐานการปฏิบัติวิชาชีพที่นำมาอ้างอิง"},
+];
+const COMPETENCY=[
+{id:"1.1",g:1,label:"1.1 มีความรู้ความเข้าใจและสามารถประยุกต์ใช้หลักการทางวิศวกรรมและเทคโนโลยีในการปฏิบัติวิชาชีพ"},
+{id:"1.2",g:1,label:"1.2 มีความรู้ความเข้าใจและสามารถประยุกต์ใช้หลักการทางวิศวกรรมและเทคโนโลยีในการประกอบวิชาชีพตามกรอบกฎหมาย"},
+{id:"2.1",g:2,label:"2.1 สามารถกำหนดขอบเขตของปัญหา การสืบค้น และการวิเคราะห์ปัญหาทางวิศวกรรมที่ซับซ้อน"},
+{id:"2.2",g:2,label:"2.2 สามารถออกแบบและแก้ปัญหาทางวิศวกรรมที่ซับซ้อน"},
+{id:"2.3",g:2,label:"2.3 สามารถประเมินผลลัพธ์และผลกระทบของงานวิศวกรรมที่ซับซ้อน"},
+{id:"2.4",g:2,label:"2.4 ร่วมกิจกรรมการพัฒนาวิชาชีพต่อเนื่องอย่างเพียงพอ"},
+{id:"2.5",g:2,label:"2.5 สามารถวินิจฉัยและเลือกใช้การแก้ปัญหาทางวิศวกรรมที่ซับซ้อนได้อย่างเหมาะสมตามหลักวิศวกรรม"},
+{id:"3.1",g:3,label:"3.1 ประพฤติปฏิบัติในกรอบจรรยาบรรณแห่งวิชาชีพ"},
+{id:"3.2",g:3,label:"3.2 สามารถบริหารจัดการและมีส่วนร่วมในการจัดการงานวิศวกรรมที่ซับซ้อน"},
+{id:"3.3",g:3,label:"3.3 สามารถติดต่อสื่อสารการปฏิบัติวิชาชีพได้อย่างชัดเจน"},
+{id:"3.4",g:3,label:"3.4 รับผิดชอบต่อการตัดสินใจหรือมีส่วนร่วมตัดสินใจในงานวิศวกรรมที่ซับซ้อน"},
+{id:"4.1",g:4,label:"4.1 ตระหนักถึงผลกระทบของงานวิศวกรรมต่อสังคม วัฒนธรรม และสิ่งแวดล้อม"},
+{id:"4.2",g:4,label:"4.2 การประกอบวิชาชีพวิศวกรรมในกรอบกฎหมายที่เกี่ยวข้อง ความปลอดภัย และชีวอนามัย"},
+];
+const GN={1:"กรอบที่ 1: ความรู้ด้านวิศวกรรม",2:"กรอบที่ 2: ประยุกต์ความรู้",3:"กรอบที่ 3: ผู้นำและการบริหาร",4:"กรอบที่ 4: สังคมและสิ่งแวดล้อม"};
+const QP=[
+{q:"Q1 เดือน 1–3",yr:1,label:"เริ่มต้นและปรับตัว",goals:["ทำความเข้าใจลักษณะงานทั้ง 6 ประเภท","บันทึกผลงานแรก แม้จะเล็กน้อย","ศึกษากฎกระทรวง 2565 ของสาขาตัวเอง"]},
+{q:"Q2 เดือน 4–6",yr:1,label:"สร้างฐานผลงาน",goals:["บันทึกผลงานให้ครบ 2–3 โครงการ","พยายามให้มีลักษณะงานหลากหลาย","จดปัญหาที่แก้ได้และวิธีการแก้"]},
+{q:"Q3 เดือน 7–9",yr:1,label:"ขยายขอบเขตงาน",goals:["หาโอกาสทำงานประเภทที่ยังขาด","บันทึกผลสำเร็จที่วัดได้ (ตัวเลข)","พัฒนาวิชาชีพ CPD อย่างน้อย 1 ครั้ง"]},
+{q:"Q4 เดือน 10–12",yr:1,label:"ทบทวนปีแรก",goals:["ทบทวนผลงานทั้งหมดใน Log Book","ระบุโครงการที่มีศักยภาพเป็นผลงานดีเด่น","วางแผนปีที่ 2"]},
+{q:"Q5 เดือน 13–18",yr:2,label:"สร้างผลงานเชิงลึก",goals:["รับผิดชอบงานที่ซับซ้อนมากขึ้น","บันทึกการตัดสินใจพร้อมเหตุผล","เริ่มร่างโครงสร้างผลงานดีเด่นเรื่องแรก"]},
+{q:"Q6 เดือน 19–24",yr:2,label:"สะสมผลงานคุณภาพ",goals:["มีผลงานในบัญชีอย่างน้อย 3–5 โครงการ","ระบุผลงานดีเด่นเรื่องที่ 1","เริ่มศึกษา Competency Framework"]},
+{q:"Q7 เดือน 25–30",yr:3,label:"เขียนผลงานดีเด่น",goals:["เขียนผลงานดีเด่นเรื่องที่ 1 ครบ 12 หัวข้อ","เลือกผลงานดีเด่นเรื่องที่ 2","เริ่มร่างคำแถลง 13 หัวข้อ"]},
+{q:"Q8 เดือน 31–36",yr:3,label:"เตรียมยื่นสภาวิศวกร",goals:["เขียนผลงานดีเด่นครบ 2–3 เรื่อง","กรอกคำแถลงครบ 13 หัวข้อพร้อมอ้างอิง","ตรวจสอบความครบถ้วนทั้งหมด"]},
+];
+
+let D=loadD(),curTab='newmode',curSub='countdown',editRecId=null,editWorkId=null,curSec=OW_SECTIONS[0].id,wEdData={},rSelTypes=[];
+function loadD(){try{return JSON.parse(localStorage.getItem('eng-lb-mobile'))||initD();}catch(e){return initD();}}
+function initD(){return{profile:{name:'',licenseNumber:'',branch:'วิศวกรรมโยธา',licenseDate:'',company:'',email:''},workRecords:[],outstandingWorks:[],competency:{}};}
+function save(){localStorage.setItem('eng-lb-mobile',JSON.stringify(D));renderStatusBar();}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+function sv(id,val){const el=document.getElementById(id);if(el)el.value=val||'';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+function showAthGuide(){openModal('ath-modal');}
+
+function switchTab(id){
+  curTab=id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  const renders={newmode:renderNewMode,profile:renderProfile,work:renderWork,outstanding:renderOW,competency:renderComp,generate:renderGen};
+  if(renders[id])renders[id]();
+  window.scrollTo(0,0);
+}
+
+function calcCD(){
+  if(!D.profile.licenseDate)return null;
+  const ms=Date.now()-new Date(D.profile.licenseDate).getTime();
+  const me=Math.max(0,Math.floor(ms/(30.44*24*60*60*1000)));
+  return{me,ml:Math.max(0,36-me),pct:Math.min(100,Math.round((me/36)*100)),ready:me>=36};
+}
+function renderStatusBar(){
+  const cd=calcCD();
+  const cf=Object.keys(D.competency).filter(k=>D.competency[k]?.statement).length;
+  const items=[
+    {l:'บัญชีงาน',v:D.workRecords.length+' โครงการ',ok:D.workRecords.length>0},
+    {l:'ผลงานดีเด่น',v:D.outstandingWorks.length+' เรื่อง',ok:D.outstandingWorks.length>=2},
+    {l:'คำแถลง',v:cf+'/13',ok:cf>=13},
+    {l:'เหลืออีก',v:cd?(cd.ready?'พร้อมยื่น🎉':cd.ml+' เดือน'):'ยังไม่กรอก',ok:cd?.ready},
+  ];
+  document.getElementById('status-bar').innerHTML=items.map(i=>`<div class="ss-item ${i.ok?'ok':''}"><div class="ss-label">${i.ok?'✓ ':''}${i.l}</div><div class="ss-val">${i.v}</div></div>`).join('');
+}
+
+function renderProfile(){
+  const p=D.profile;
+  document.getElementById('page-profile').innerHTML=`
+  <div class="card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px">ข้อมูลส่วนตัวและใบอนุญาต</div>
+    <div class="field"><label>ชื่อ-นามสกุล *</label><input id="p-name" value="${p.name}" placeholder="นายวิศวกร ดีเด่น" oninput="saveProfile()"></div>
+    <div class="field"><label>เลขทะเบียนภาคีวิศวกร *</label><input id="p-license" value="${p.licenseNumber}" placeholder="ภย.XXXXX" oninput="saveProfile()"></div>
+    <div class="field"><label>สาขาวิชาชีพวิศวกรรม *</label>
+      <select id="p-branch" onchange="saveProfile()">
+        ${['วิศวกรรมโยธา','วิศวกรรมเหมืองแร่','วิศวกรรมเครื่องกล','วิศวกรรมไฟฟ้า','วิศวกรรมอุตสาหการ','วิศวกรรมสิ่งแวดล้อม','วิศวกรรมเคมี'].map(b=>`<option ${p.branch===b?'selected':''}>${b}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>วันที่ได้รับใบอนุญาต *</label><div class="hint">ใช้คำนวณ Countdown 3 ปี</div><input type="date" id="p-date" value="${p.licenseDate}" oninput="saveProfile()"></div>
+    <div class="field"><label>บริษัท/หน่วยงานปัจจุบัน</label><input id="p-company" value="${p.company}" oninput="saveProfile()"></div>
+    <div class="field"><label>อีเมล</label><input id="p-email" type="email" value="${p.email}" oninput="saveProfile()"></div>
+    <div class="info info-b">ข้อมูลทั้งหมดบันทึกในเครื่องของท่านอัตโนมัติ ไม่มีการส่งข้อมูลออกภายนอก</div>
+    <button class="btn btn-s btn-full" onclick="openModal('data-modal')">💾 Export / Import ข้อมูล</button>
+  </div>`;
+}
+function saveProfile(){
+  D.profile={name:v('p-name'),licenseNumber:v('p-license'),branch:v('p-branch'),licenseDate:v('p-date'),company:v('p-company'),email:v('p-email')};
+  save();
+}
+
+function renderNewMode(){
+  document.getElementById('page-newmode').innerHTML=`
+  <div class="flow-bar">
+    <div class="flow-step"><div class="flow-num">①</div><div class="flow-text"><div class="flow-title">บันทึกผลงาน</div><div class="flow-sub">ตลอด 3 ปี — ทุกโครงการที่ทำ</div></div></div>
+    <div class="flow-step"><div class="flow-num">②</div><div class="flow-text"><div class="flow-title">คัดเลือก 2–3 เรื่องดีเด่น</div><div class="flow-sub">เมื่อพร้อมยื่น — เขียนรายละเอียด 12 หัวข้อ</div></div></div>
+    <div class="flow-step"><div class="flow-num">③</div><div class="flow-text"><div class="flow-title">เขียนคำแถลง 13 หัวข้อ</div><div class="flow-sub">อิงเนื้อหาจากผลงานดีเด่น พร้อมอ้างอิง</div></div></div>
+    <div class="flow-step"><div class="flow-num">④</div><div class="flow-text"><div class="flow-title">สร้างเอกสารยื่นสภาวิศวกร</div><div class="flow-sub">Generate แบบฟอร์มทั้ง 4 อัตโนมัติ</div></div></div>
+  </div>
+  <div class="sub-nav">
+    <button class="snav-btn active" id="sn-countdown" onclick="showSub('countdown')">📅 Countdown</button>
+    <button class="snav-btn" id="sn-plan" onclick="showSub('plan')">📋 แผนรายไตรมาส</button>
+    <button class="snav-btn" id="sn-guide" onclick="showSub('guide')">📖 คำแนะนำลักษณะงาน</button>
+  </div>
+  <div id="sub-countdown"></div>
+  <div id="sub-plan" style="display:none"></div>
+  <div id="sub-guide" style="display:none"></div>`;
+  showSub('countdown');
+}
+function showSub(id){
+  curSub=id;
+  ['countdown','plan','guide'].forEach(s=>{
+    const el=document.getElementById('sub-'+s);if(el)el.style.display=s===id?'':'none';
+    const btn=document.getElementById('sn-'+s);if(btn)btn.classList.toggle('active',s===id);
+  });
+  if(id==='countdown')renderCD();
+  if(id==='plan')renderPlan();
+  if(id==='guide')renderGuide();
+}
+function renderCD(){
+  const cd=calcCD();
+  const uwt=[...new Set(D.workRecords.flatMap(r=>r.workTypes))];
+  const cf=Object.keys(D.competency).filter(k=>D.competency[k]?.statement).length;
+  const rc=[
+    {l:'ถือใบอนุญาตครบ 3 ปี',ok:cd?.ready,v:cd?cd.me+' เดือน':'ยังไม่ได้กรอกวันที่'},
+    {l:'มีผลงานในบัญชีปริมาณงาน',ok:D.workRecords.length>0,v:D.workRecords.length+' โครงการ'},
+    {l:'มีลักษณะงานหลากหลาย ≥2 ประเภท',ok:uwt.length>=2,v:uwt.length+'/6 ประเภท'},
+    {l:'มีผลงานดีเด่น 2–3 เรื่อง',ok:D.outstandingWorks.length>=2,v:D.outstandingWorks.length+' เรื่อง'},
+    {l:'กรอกคำแถลงครบ 13 หัวข้อ',ok:cf>=13,v:cf+'/13 หัวข้อ'},
+  ];
+  const okCnt=rc.filter(c=>c.ok).length;
+  let html='<div class="card">';
+  if(!D.profile.licenseDate){
+    html+=`<div class="info info-a">กรุณากรอกวันที่ได้รับใบอนุญาตในแท็บ "ข้อมูล" ก่อนครับ</div><button class="btn btn-p btn-full" onclick="switchTab('profile')">ไปกรอกข้อมูล →</button>`;
+  } else {
+    html+=cd.ready
+      ?`<div class="cd-big"><div style="font-size:48px">🎉</div><div style="font-size:20px;font-weight:800;color:#27500A">ครบ 3 ปีแล้ว!</div><div class="cd-unit">พร้อมยื่นขอเลื่อนระดับ</div><div class="cd-sub">ถือใบอนุญาตมา ${cd.me} เดือน</div></div>`
+      :`<div class="cd-big"><div style="font-size:13px;color:#666;margin-bottom:4px">เหลืออีก</div><div class="cd-num">${cd.ml}</div><div class="cd-unit">เดือน จึงจะครบ 3 ปี</div><div class="cd-sub">ผ่านมา ${cd.me} เดือน (${cd.pct}%)</div></div>`;
+    html+=`<div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin-bottom:4px"><span>เริ่มต้น</span><span>1 ปี</span><span>2 ปี</span><span>3 ปี</span></div>
+      <div style="height:14px;background:#e8e8e0;border-radius:7px;overflow:hidden;position:relative">
+        <div style="width:${cd.pct}%;height:100%;background:${cd.ready?'#639922':cd.pct>66?'#BA7517':cd.pct>33?'#185FA5':'#B5D4F4'};border-radius:7px"></div>
+        <div style="position:absolute;left:33%;top:0;bottom:0;width:1px;background:#fff"></div>
+        <div style="position:absolute;left:66%;top:0;bottom:0;width:1px;background:#fff"></div>
+      </div></div>`;
+  }
+  html+=`<div style="font-size:13px;font-weight:700;margin-bottom:10px">ความพร้อมในการยื่น (${okCnt}/${rc.length})</div>`;
+  rc.forEach(c=>{html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${c.ok?'#EAF3DE':'#f5f5f0'};border:1px solid ${c.ok?'#C0DD97':'#e0e0d8'};border-radius:9px;margin-bottom:6px"><span style="font-size:16px">${c.ok?'✓':'○'}</span><div><div style="font-size:13px;font-weight:600;color:${c.ok?'#27500A':'#1a1a1a'}">${c.l}</div><div style="font-size:12px;color:${c.ok?'#3B6D11':'#666'}">${c.v}</div></div></div>`;});
+  if(okCnt===5)html+=`<div class="info info-g" style="margin-top:8px;font-weight:700;text-align:center">เอกสารครบถ้วน พร้อมยื่นสภาวิศวกร! → ไปที่ "สร้างเอกสาร"</div>`;
+  html+='</div>';
+  document.getElementById('sub-countdown').innerHTML=html;
+}
+function renderPlan(){
+  let html='';
+  [1,2,3].forEach(yr=>{
+    const cols=['#185FA5','#633806','#A32D2D'][yr-1];
+    html+=`<div style="font-size:13px;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e0e0d8">ปีที่ ${yr}</div>`;
+    QP.filter(q=>q.yr===yr).forEach(q=>{
+      html+=`<div class="plan-card" style="border-left:3px solid ${cols}">
+        <div style="font-size:11px;color:#888">${q.q}</div>
+        <div style="font-size:13px;font-weight:700;margin:2px 0 8px">${q.label}</div>
+        <ul style="padding-left:16px;font-size:12px;color:#555">${q.goals.map(g=>`<li style="margin-bottom:3px">${g}</li>`).join('')}</ul>
+      </div>`;
+    });
+  });
+  document.getElementById('sub-plan').innerHTML=html;
+}
+function renderGuide(){
+  let html='<p style="font-size:13px;color:#666;margin-bottom:12px">ลักษณะงาน 6 ประเภทตามกฎกระทรวง 2565</p>';
+  WORK_TYPES.forEach(t=>{
+    const g=WORK_GUIDE[t];
+    html+=`<div class="guide-card" style="border-left:3px solid ${g.tc}">
+      <div style="background:${g.c};color:${g.tc};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;margin-bottom:8px">${t}</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${g.desc}</div>
+      <div style="font-size:12px;color:#666;margin-bottom:6px"><b>เช่น:</b> ${g.ex}</div>
+      <div style="font-size:11px;color:#777;padding:6px 8px;background:#f5f5f0;border-radius:7px">${g.tip}</div>
+    </div>`;
+  });
+  document.getElementById('sub-guide').innerHTML=html;
+}
+
+function renderWork(){
+  const uwt=[...new Set(D.workRecords.flatMap(r=>r.workTypes))];
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div><h2 style="font-size:16px">① บัญชีปริมาณงาน</h2><p style="font-size:12px;color:#666;margin-top:2px">${D.workRecords.length} รายการ — จำนวนขึ้นอยู่กับลักษณะงานของแต่ละท่าน</p></div>
+    <button class="btn btn-p btn-sm" onclick="openRecModal()">+ เพิ่ม</button></div>`;
+  if(uwt.length>0){
+    html+=`<div class="card" style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">ลักษณะงานที่มีในบัญชี (${uwt.length}/6 ประเภท)</div><div class="pill-group">
+    ${WORK_TYPES.map(t=>{const has=uwt.includes(t);return`<span style="padding:3px 10px;border-radius:20px;font-size:11px;background:${has?'#E6F1FB':'#f5f5f0'};color:${has?'#185FA5':'#888'};border:1px solid ${has?'#B5D4F4':'#e0e0d8'}">${has?'✓ ':''}${t}</span>`;}).join('')}
+    </div></div>`;
+  }
+  if(D.workRecords.length===0){
+    html+=`<div class="card" style="text-align:center;padding:2rem;color:#888"><div style="font-size:32px;margin-bottom:8px">📂</div><p style="font-size:13px">ยังไม่มีผลงาน<br>เริ่มบันทึกทันทีที่ทำงานเสร็จในแต่ละโครงการ</p></div>`;
+  } else {
+    D.workRecords.forEach((r,i)=>{
+      const isSel=D.outstandingWorks.some(w=>w.sourceRecordId===r.id);
+      html+=`<div class="rec-card ${isSel?'sel':''}">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div class="rnum rblue">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px">${r.projectName||'(ยังไม่ระบุชื่อ)'}</div>
+            <div style="font-size:12px;color:#666;margin-bottom:4px">${r.company||'-'} · ${r.position||'-'}</div>
+            <div style="font-size:12px;color:#666;margin-bottom:6px">${r.startDate||'-'} – ${r.endDate||'-'} (${r.months||'?'} เดือน)</div>
+            ${r.workTypes.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${r.workTypes.map(t=>`<span class="badge bblue">${t}</span>`).join('')}</div>`:''}
+            ${isSel?'<span class="badge bgreen">✓ คัดเลือกเป็นผลงานดีเด่นแล้ว</span>':''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          ${!isSel?`<button class="btn btn-g btn-sm" style="flex:1" onclick="quickPickOW('${r.id}')">→ เลือกเป็นผลงานดีเด่น</button>`:''}
+          <button class="btn btn-s btn-sm" onclick="openRecModal('${r.id}')">แก้ไข</button>
+          <button class="btn btn-d btn-sm" onclick="delRec('${r.id}')">ลบ</button>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('page-work').innerHTML=html;
+}
+function openRecModal(id){
+  editRecId=id||null;rSelTypes=[];
+  const r=id?D.workRecords.find(x=>x.id===id):null;
+  document.getElementById('rec-modal-title').textContent=id?'แก้ไขผลงาน':'บันทึกผลงานในบัญชีปริมาณงาน';
+  const fields={'r-project':'projectName','r-company':'company','r-position':'position','r-months':'months','r-start':'startDate','r-end':'endDate','r-size':'workSize','r-resp':'responsibilities','r-achieve':'achievements','r-cert-name':'certifierName','r-cert-pos':'certifierPosition'};
+  Object.entries(fields).forEach(([fid,key])=>sv(fid,r?r[key]:''));
+  rSelTypes=r?[...r.workTypes]:[];
+  renderRTypes();openModal('rec-modal');
+}
+function renderRTypes(){document.getElementById('r-types-ui').innerHTML=WORK_TYPES.map(t=>`<button class="pill ${rSelTypes.includes(t)?'on':''}" onclick="toggleType('${t}')">${t}</button>`).join('');}
+function toggleType(t){rSelTypes.includes(t)?rSelTypes=rSelTypes.filter(x=>x!==t):rSelTypes.push(t);renderRTypes();}
+function saveRec(){
+  const rec={id:editRecId||newId(),projectName:v('r-project'),company:v('r-company'),position:v('r-position'),months:v('r-months'),startDate:v('r-start'),endDate:v('r-end'),workTypes:[...rSelTypes],workSize:v('r-size'),responsibilities:v('r-resp'),achievements:v('r-achieve'),certifierName:v('r-cert-name'),certifierPosition:v('r-cert-pos')};
+  if(!rec.projectName){alert('กรุณาระบุชื่อโครงการ');return;}
+  editRecId?D.workRecords=D.workRecords.map(r=>r.id===editRecId?rec:r):D.workRecords.push(rec);
+  closeModal('rec-modal');save();toast('บันทึกผลงานแล้ว ✓');renderWork();
+}
+function delRec(id){if(!confirm('ลบผลงานนี้?'))return;D.workRecords=D.workRecords.filter(r=>r.id!==id);D.outstandingWorks=D.outstandingWorks.map(w=>w.sourceRecordId===id?{...w,sourceRecordId:''}:w);save();toast('ลบแล้ว');renderWork();}
+function quickPickOW(recId){editWorkId=null;wEdData={id:newId(),title:'',sourceRecordId:recId,...Object.fromEntries(OW_SECTIONS.map(s=>[s.id,""]))};curSec=OW_SECTIONS[0].id;openWorkModal();switchTab('outstanding');}
+
+function renderOW(){
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div><h2 style="font-size:16px">② ผลงานวิศวกรรมดีเด่น</h2><p style="font-size:12px;color:#666;margin-top:2px">2–3 เรื่อง · แต่ละเรื่องครบ 12 หัวข้อ ไม่น้อยกว่า 30 หน้า</p></div>
+    <button class="btn btn-p btn-sm" onclick="openOWModal()">+ เพิ่ม</button></div>`;
+  if(D.outstandingWorks.length===0){
+    html+=`<div class="card" style="text-align:center;padding:2rem;color:#888"><div style="font-size:32px;margin-bottom:8px">📖</div><p style="font-size:13px">ยังไม่มีผลงานดีเด่น<br>กลับไปที่ "บัญชีงาน" แล้วกด "เลือกเป็นผลงานดีเด่น"</p></div>`;
+  } else {
+    D.outstandingWorks.forEach((w,i)=>{
+      const filled=OW_SECTIONS.filter(s=>w[s.id]?.trim()).length;
+      const pct=Math.round((filled/OW_SECTIONS.length)*100);
+      const src=D.workRecords.find(r=>r.id===w.sourceRecordId);
+      html+=`<div class="rec-card sel">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div class="rnum rgreen">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px">${w.title||'(ยังไม่ตั้งชื่อ)'}</div>
+            ${src?`<div style="font-size:12px;color:#666;margin-bottom:6px">จากโครงการ: ${src.projectName}</div>`:''}
+            <div style="font-size:12px;color:#666;margin-bottom:4px">${filled}/${OW_SECTIONS.length} หัวข้อ (${pct}%)</div>
+            <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${pct===100?'#639922':'#BA7517'}"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-s btn-sm" style="flex:1" onclick="openOWModal('${w.id}')">✏ เขียน/แก้ไข</button>
+          <button class="btn btn-d btn-sm" onclick="delOW('${w.id}')">ลบ</button>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('page-outstanding').innerHTML=html;
+}
+function openOWModal(id){
+  editWorkId=id||null;
+  const w=id?D.outstandingWorks.find(x=>x.id===id):null;
+  wEdData=w?{...w}:{id:newId(),title:'',sourceRecordId:'',...Object.fromEntries(OW_SECTIONS.map(s=>[s.id,'']))};
+  curSec=OW_SECTIONS[0].id;openWorkModal();
+}
+function openWorkModal(){
+  sv('w-title',wEdData.title);
+  const srcOpts=D.workRecords.map((r,i)=>`<option value="${r.id}" ${wEdData.sourceRecordId===r.id?'selected':''}>${i+1}. ${r.projectName||'(ไม่มีชื่อ)'}</option>`).join('');
+  document.getElementById('w-source').innerHTML='<option value="">— เลือกโครงการ —</option>'+srcOpts;
+  document.getElementById('w-source').value=wEdData.sourceRecordId||'';
+  onSrcChange();renderSecNav();renderSecContent();openModal('work-modal');
+}
+function onSrcChange(){
+  wEdData.sourceRecordId=v('w-source');
+  const src=D.workRecords.find(r=>r.id===wEdData.sourceRecordId);
+  const info=document.getElementById('w-source-info');
+  if(src){info.style.display='';info.className='info info-b';info.textContent=`${src.projectName} | ${src.company} | ${src.workTypes.join(', ')}`;}
+  else info.style.display='none';
+}
+function renderSecNav(){
+  const filled=OW_SECTIONS.filter(s=>wEdData[s.id]?.trim()).length;
+  document.getElementById('w-sec-nav').innerHTML=OW_SECTIONS.map(s=>{
+    const done=!!wEdData[s.id]?.trim();const active=curSec===s.id;
+    return`<button class="sec-chip ${active?'active':done?'done':''}" onclick="switchSec('${s.id}')">${done?'✓ ':''}${s.label}</button>`;
+  }).join('');
+  document.getElementById('w-sec-cnt').textContent=`${filled}/${OW_SECTIONS.length} หัวข้อ`;
+  document.getElementById('w-prog-label').textContent=`${filled}/${OW_SECTIONS.length} หัวข้อ`;
+}
+function renderSecContent(){
+  const sec=OW_SECTIONS.find(s=>s.id===curSec);
+  document.getElementById('w-sec-title').textContent=sec.label;
+  document.getElementById('w-sec-hint').textContent=sec.hint;
+  document.getElementById('w-sec-content').value=wEdData[curSec]||'';
+  document.getElementById('w-char-cnt').textContent=(wEdData[curSec]||'').length+' ตัวอักษร';
+}
+function switchSec(id){wEdData[curSec]=v('w-sec-content');wEdData.title=v('w-title');wEdData.sourceRecordId=v('w-source');curSec=id;renderSecNav();renderSecContent();}
+function onSecInput(){wEdData[curSec]=v('w-sec-content');document.getElementById('w-char-cnt').textContent=(v('w-sec-content')||'').length+' ตัวอักษร';renderSecNav();}
+function saveWork(){
+  wEdData.title=v('w-title');wEdData.sourceRecordId=v('w-source');wEdData[curSec]=v('w-sec-content');
+  if(!wEdData.title){alert('กรุณาระบุชื่อเรื่อง');return;}
+  editWorkId?D.outstandingWorks=D.outstandingWorks.map(w=>w.id===editWorkId?{...wEdData}:w):D.outstandingWorks.push({...wEdData});
+  closeModal('work-modal');save();toast('บันทึกผลงานดีเด่นแล้ว ✓');renderOW();
+}
+function delOW(id){if(!confirm('ลบผลงานดีเด่นนี้?'))return;D.outstandingWorks=D.outstandingWorks.filter(w=>w.id!==id);save();toast('ลบแล้ว');renderOW();}
+
+function renderComp(){
+  const cf=Object.keys(D.competency).filter(k=>D.competency[k]?.statement).length;
+  const owOpts=D.outstandingWorks.map((w,i)=>`<option value="${w.id}">เรื่องที่ ${i+1}: ${w.title?.slice(0,15)||'(ไม่มีชื่อ)'}</option>`).join('');
+  const secOpts=OW_SECTIONS.map(s=>`<option value="${s.label}">${s.label}</option>`).join('');
+  let html=`<div style="margin-bottom:12px"><h2 style="font-size:16px">③ คำแถลงความสามารถ</h2><p style="font-size:12px;color:#666;margin-top:2px">อิงเนื้อหาจากผลงานดีเด่น — ${cf}/13 หัวข้อที่กรอกแล้ว</p></div>`;
+  if(D.outstandingWorks.length===0)html+=`<div class="info info-a">กรุณาเขียนผลงานดีเด่นอย่างน้อย 1 เรื่องก่อน</div>`;
+  let lg=0;
+  COMPETENCY.forEach(item=>{
+    if(item.g!==lg){lg=item.g;html+=`<div class="comp-ghd">${GN[item.g]}</div>`;}
+    const c=D.competency[item.id]||{};const done=!!c.statement;
+    html+=`<div class="comp-card ${done?'done':''}">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#1a1a1a">${done?'✓ ':''}${item.label}</div>
+      <div class="field"><label style="font-size:12px">ข้อความ (อิงเนื้อหาจากผลงานดีเด่น)</label>
+        <textarea style="min-height:80px;font-size:14px" oninput="saveComp('${item.id}','statement',this.value)" placeholder="อธิบายว่าท่านได้ใช้ความรู้/ประสบการณ์นี้แก้ปัญหาในผลงานดีเด่นอย่างไร...">${c.statement||''}</textarea></div>
+      <div class="field"><label style="font-size:12px">ผลงานดีเด่นเรื่องที่</label>
+        <select onchange="saveComp('${item.id}','workId',this.value)" data-id="${item.id}" data-field="workId"><option value="">— เลือก —</option>${owOpts}</select></div>
+      <div class="field"><label style="font-size:12px">หัวข้อที่อ้างถึง</label>
+        <select onchange="saveComp('${item.id}','owSection',this.value)" data-id="${item.id}" data-field="owSection"><option value="">— เลือก —</option>${secOpts}</select></div>
+      <div class="field"><label style="font-size:12px">หน้าที่ / มาตรฐานอ้างอิง</label>
+        <input oninput="saveComp('${item.id}','reference',this.value)" placeholder="หน้า 12 / มยผ.1302" value="${c.reference||''}"></div>
+    </div>`;
+  });
+  document.getElementById('page-competency').innerHTML=html;
+  COMPETENCY.forEach(item=>{
+    const c=D.competency[item.id]||{};
+    document.querySelectorAll(`[data-id="${item.id}"][data-field="workId"]`).forEach(el=>el.value=c.workId||'');
+    document.querySelectorAll(`[data-id="${item.id}"][data-field="owSection"]`).forEach(el=>el.value=c.owSection||'');
+  });
+}
+function saveComp(id,field,val){if(!D.competency[id])D.competency[id]={};D.competency[id][field]=val;localStorage.setItem('eng-lb-mobile',JSON.stringify(D));renderStatusBar();}
+
+function renderGen(){
+  const cd=calcCD();const cf=Object.keys(D.competency).filter(k=>D.competency[k]?.statement).length;
+  let html=`<h2 style="font-size:16px;margin-bottom:4px">สร้างเอกสารยื่นสภาวิศวกร</h2><p style="font-size:12px;color:#666;margin-bottom:12px">ระบบจะนำข้อมูลที่บันทึกไว้มาจัดรูปแบบอัตโนมัติ</p>`;
+  if(cd&&!cd.ready)html+=`<div class="info info-a">ยังถือใบอนุญาตไม่ครบ 3 ปี (เหลืออีก ${cd.ml} เดือน) — สามารถเตรียมเอกสารไว้ล่วงหน้าได้</div>`;
+  const btns=[
+    {label:'แบบฟอร์ม 1',sub:'ประวัติการประกอบวิชาชีพ',stat:D.workRecords.length+' รายการ',fn:"generate('f1')"},
+    {label:'แบบฟอร์ม 2',sub:'บัญชีปริมาณงาน',stat:D.workRecords.length+' โครงการ',fn:"generate('f2')"},
+    {label:'แบบฟอร์ม 4',sub:'คำแถลงความสามารถ',stat:cf+'/13 หัวข้อ',fn:"generate('f4')"},
+  ];
+  btns.forEach(b=>{html+=`<button class="btn btn-s btn-full" onclick="${b.fn}" style="text-align:left;padding:14px;height:auto;margin-bottom:8px"><div style="font-size:11px;color:#888">${b.label}</div><div style="font-size:14px;font-weight:700;margin:2px 0">${b.sub}</div><div style="font-size:12px;color:#666">${b.stat}</div></button>`;});
+  html+=`<div class="card"><div style="font-size:11px;color:#888">แบบฟอร์ม 3</div><div style="font-size:14px;font-weight:700;margin:2px 0 8px">ผลงานวิศวกรรมดีเด่น</div>`;
+  if(D.outstandingWorks.length===0)html+=`<p style="font-size:12px;color:#888">กรุณาเขียนผลงานดีเด่นก่อน</p>`;
+  else D.outstandingWorks.forEach((w,i)=>{html+=`<button class="btn btn-s btn-full" style="margin-bottom:6px;text-align:left;font-size:13px" onclick="generate('f3','${w.id}')">เรื่องที่ ${i+1}: ${w.title||'(ไม่มีชื่อ)'}</button>`;});
+  html+=`</div><div class="card" id="output-card" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong>ผลลัพธ์</strong><div style="display:flex;gap:6px"><button class="btn btn-s btn-sm" onclick="copyOut()">คัดลอก</button><button class="btn btn-s btn-sm" onclick="dlOut()">ดาวน์โหลด</button></div></div>
+    <textarea id="output-text" class="output-box" readonly></textarea>
+    <div class="info info-a" style="margin-top:10px;font-size:12px">คัดลอกข้อความนี้แล้วนำไปวางใน Claude.ai เพื่อให้ช่วยขยายความ จัดรูปแบบ และตรวจสอบก่อนยื่นสภาวิศวกร</div>
+  </div>`;
+  document.getElementById('page-generate').innerHTML=html;
+}
+function generate(type,wid){
+  const p=D.profile;let out='';const eq='═'.repeat(60);const dsh='─'.repeat(40);
+  if(type==='f1'){
+    out=`ประวัติการประกอบวิชาชีพวิศวกรรมควบคุม\nชื่อ: ${p.name}  เลขทะเบียน: ${p.licenseNumber}\nสาขา: ${p.branch}  วันที่ได้รับใบอนุญาต: ${p.licenseDate}\n${eq}\n\n`;
+    D.workRecords.forEach((r,i)=>{out+=`${i+1}. ${r.startDate}–${r.endDate} (${r.months} เดือน)\nโครงการ: ${r.projectName}\nบริษัท: ${r.company}  ตำแหน่ง: ${r.position}\nลักษณะงาน: ${r.workTypes.join(', ')}\nขนาดงาน: ${r.workSize}\nความรับผิดชอบ: ${r.responsibilities}\nผลงานเด่น: ${r.achievements}\n\n`;});
+  } else if(type==='f2'){
+    out=`บัญชีแสดงผลงานและปริมาณงาน\nของ ${p.name}  เลขทะเบียน ${p.licenseNumber}\n${eq}\n\n`;
+    D.workRecords.forEach((r,i)=>{out+=`(${i+1})\n(2) ลักษณะงาน: ${r.workTypes.join(', ')}\n(3) รายละเอียด: ${r.projectName} — ${r.workSize}\n(4) ระยะเวลา: ${r.startDate}–${r.endDate}\n(5) ผลการปฏิบัติ: ${r.achievements}\n(6) ผู้รับรอง: ${r.certifierName} (${r.certifierPosition})\n${dsh}\n\n`;});
+  } else if(type==='f3'){
+    const w=D.outstandingWorks.find(x=>x.id===wid);if(!w)return;
+    const src=D.workRecords.find(r=>r.id===w.sourceRecordId);
+    out=`รายงานผลงานวิศวกรรมดีเด่น\nเรื่อง: ${w.title}\n`;
+    if(src)out+=`จากโครงการ: ${src.projectName} (${src.company})\n`;
+    out+=`${eq}\n\n`;
+    OW_SECTIONS.forEach(s=>{out+=`${s.label}\n${dsh}\n${w[s.id]||'(ยังไม่ได้กรอก)'}\n\n`;});
+  } else if(type==='f4'){
+    out=`คำแถลงความสามารถการประกอบวิชาชีพ\n(Professional Competency Statement)\nของ ${p.name}  สาขา ${p.branch}\n${eq}\n`;
+    let lg=0;
+    COMPETENCY.forEach(item=>{
+      if(item.g!==lg){lg=item.g;out+=`\n${GN[item.g]}\n${'─'.repeat(50)}\n`;}
+      const c=D.competency[item.id]||{};
+      const wIdx=D.outstandingWorks.findIndex(w=>w.id===c.workId);
+      out+=`\n${item.label}\nข้อความ:\n${c.statement||'(ยังไม่ได้กรอก)'}\nอ้างถึง: ${wIdx>=0?`ผลงานดีเด่นเรื่องที่ ${wIdx+1}`:'—'} หัวข้อ: ${c.owSection||'-'} หน้าที่: ${c.reference||'-'}\n${'·'.repeat(30)}\n`;
+    });
+  }
+  const oc=document.getElementById('output-card');if(oc){oc.style.display='';const ot=document.getElementById('output-text');if(ot){ot.value=out;oc.scrollIntoView({behavior:'smooth'});}}
+}
+function copyOut(){
+  const txt=document.getElementById('output-text')?.value||'';
+  navigator.clipboard.writeText(txt).then(()=>toast('คัดลอกแล้ว ✓')).catch(()=>{const el=document.getElementById('output-text');if(el){el.select();document.execCommand('copy');toast('คัดลอกแล้ว ✓');}});
+}
+function dlOut(){
+  const txt=document.getElementById('output-text')?.value||'';
+  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);a.download='logbook_export.txt';a.click();
+}
+function exportData(){
+  const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D,null,2));a.download='engineer_logbook_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Export เรียบร้อยแล้ว ✓');
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(imp.profile&&imp.workRecords){if(confirm('นำเข้าข้อมูล? ข้อมูลปัจจุบันจะถูกแทนที่')){D=imp;save();toast('Import เรียบร้อยแล้ว ✓');switchTab(curTab);}}else alert('ไฟล์ไม่ถูกต้อง');}catch(err){alert('ไม่สามารถอ่านไฟล์ได้');}};
+  reader.readAsText(f);e.target.value='';
+}
+
+window.onload=()=>{renderStatusBar();switchTab('newmode');};
+</script>
+</body>
+</html>
